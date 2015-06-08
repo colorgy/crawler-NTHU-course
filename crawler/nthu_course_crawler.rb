@@ -174,6 +174,15 @@ class NthuCourseCrawler
     end # end each rows
   end # end parse_course
 
+
+  def current_year
+    (Time.now.month.between?(1, 7) ? Time.now.year - 1 : Time.now.year)
+  end
+
+  def current_term
+    (Time.now.month.between?(2, 7) ? 2 : 1)
+  end
+
 end
 
 cc = NthuCourseCrawler.new(year: 2014, term: 1)
