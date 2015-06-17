@@ -51,8 +51,8 @@ class NthuCourseCrawler
 
     visit @query_url
 
-    depts = @doc.css('select[name="dept"] option').map {|opt| [opt[:value], opt.text]}
-    depts_h = Hash[depts[1..-1].map {|dept| [dept[0], dept[1].split(' ')[1]]}]
+    depts = @doc.css('select[name="cou_code"] option').map {|opt| [opt[:value], opt.text]}
+    depts_h = Hash[depts[1..-1].map {|dept| [dept[0], dept[1].strip.split('　')[1].split(' ')[0]]}]
     ys = "#{@year-1911}|#{@term.to_s.ljust(2, '0')}"
 
     # fetch captcha, keep trying until correct captcha
@@ -63,7 +63,7 @@ class NthuCourseCrawler
         'ACIXSTORE' => @acixstore,
         'YS' => ys,
         'cond' => 'b',
-        'dept' => depts_h.keys[0],
+        'cou_code' => depts_h.keys[0],
         'chks' => '',
         'auth_num' => @captcha
       }
@@ -77,8 +77,8 @@ class NthuCourseCrawler
       r = RestClient.post @result_url, {
         'ACIXSTORE' => @acixstore,
         'YS' => ys,
-        'cond' => 'b',
-        'dept' => dep_c,
+        'cond' => 'a',
+        'cou_code' => dep_c,
         'chks' => '',
         'auth_num' => @captcha
       }
@@ -127,7 +127,7 @@ class NthuCourseCrawler
       end
 
       if @detail
-        # TODOs: parse detail page
+        # TODOs: parse syllabus page
         # "https://www.ccxp.nthu.edu.tw/ccxp/INQUIRE/JH/common/Syllabus/1.php?ACIXSTORE=#{acixstore}&c_key=#{URI.encode(code)}")
       end
 
@@ -141,7 +141,7 @@ class NthuCourseCrawler
         lecturer: lecturer,
         required: rows[i+1].text.include?("必修"),
         department: dep_n,
-        department_code: dep_c,
+        department_code: dep_c.strip,
         day_1: course_days[0],
         day_2: course_days[1],
         day_3: course_days[2],
