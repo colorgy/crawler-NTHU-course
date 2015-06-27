@@ -110,8 +110,8 @@ class NthuCourseCrawler
     @acixstore = get_view_state["ACIXSTORE"]
 
     image_url = URI.join(@query_url, @doc.css('img')[0][:src]).to_s
-    File.write("temp/#{@acixstore}.png", open(image_url).read)
-    img = RTesseract.new("temp/#{@acixstore}.png", psm: 8, options: :digits)
+    File.write("tmp/#{@acixstore}.png", open(image_url).read)
+    img = RTesseract.new("tmp/#{@acixstore}.png", psm: 8, options: :digits)
 
     return img.to_s.strip
   end

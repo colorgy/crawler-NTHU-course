@@ -40,6 +40,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
+    rmagick (2.13.4)
     rtesseract (1.2.4)
     sidekiq (3.3.4)
       celluloid (>= 0.16.0)
@@ -79,5 +80,6 @@ DEPENDENCIES
   crawler_rocks
   iconv
   pry
+  rmagick
   rtesseract
   web_task_runner

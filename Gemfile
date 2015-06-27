@@ -6,3 +6,5 @@ gem 'rtesseract'
 gem 'iconv'
 
 gem 'web_task_runner'
+
+gem "rmagick", require: 'RMagick'
