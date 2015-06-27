@@ -201,6 +201,7 @@ class NthuCourseCrawler
           location_8: course_locations[7],
           location_9: course_locations[8],
         }
+        @after_each_proc.call(:course => @courses[code]) if @after_each_proc
       end # each row do
     end # each newpage do
   end # end parse_course
@@ -216,5 +217,5 @@ class NthuCourseCrawler
 
 end
 
-cc = NthuCourseCrawler.new(year: 2015, term: 1)
-File.write('1041courses.json', JSON.pretty_generate(cc.courses))
+# cc = NthuCourseCrawler.new(year: 2015, term: 1)
+# File.write('1041courses.json', JSON.pretty_generate(cc.courses))
