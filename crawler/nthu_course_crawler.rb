@@ -101,13 +101,15 @@ class NthuCourseCrawler
       parse_course(Nokogiri::HTML(@ic.iconv(r)), dep_c, depts_h[dep_c])
     end
 
-    @courses.map{|k, v| v}
+    @courses.values
   end
 
   def refresh_captcha
     visit @query_url
 
     @acixstore = get_view_state["ACIXSTORE"]
+
+    Dir.mkdir('tmp') if not Dir.exist?('tmp')
 
     image_url = URI.join(@query_url, @doc.css('img')[0][:src]).to_s
     File.write("tmp/#{@acixstore}.png", open(image_url).read)
