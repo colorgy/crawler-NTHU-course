@@ -123,8 +123,8 @@ class NthuCourseCrawler
       year = nil; term = nil; department = nil; department_code = nil; class_code = nil;
 
       page.css('font').first.text.match(/(?<year>\d+)學年度第(?<term>\d)學期(?<dep>.+?)\((?<dc>[A-Z]+)\s*(?<gc>.+?)\)課程/) do |m|
-        year = m[:year]
-        term = m[:term]
+        year = m[:year].to_i
+        term = m[:term].to_i
         department = m[:dep]
         department_code = m[:dc]
         grade_code = m[:gc]
@@ -164,7 +164,7 @@ class NthuCourseCrawler
 
         @courses[code] || @courses[code] = {}
         @courses[code] = {
-          year: year,
+          year: year+1911,
           term: term,
           name: datas[1].text.strip.gsub(/\s+/, ' '),
           code: code,
