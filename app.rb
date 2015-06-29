@@ -19,7 +19,7 @@ class CrawlWorker < WebTaskRunner::TaskWorker
       update_progress: proc { |payload| WebTaskRunner.job_1_progress = payload[:progress] },
       after_each: proc do |payload|
         course = payload[:course]
-        puts "Saving course #{course[:code]} ..."
+        print "Saving course #{course[:code]} ...\n"
         RestClient.put("#{ENV['DATA_MANAGEMENT_API_ENDPOINT']}/#{course[:code]}?key=#{ENV['DATA_MANAGEMENT_API_KEY']}",
           { ENV['DATA_NAME'] => course }
         )

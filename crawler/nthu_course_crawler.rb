@@ -7,6 +7,9 @@ require 'open-uri'
 require 'json'
 require 'pry'
 
+require 'thread'
+require 'thwait'
+
 require_relative './nthu_note_pattern.rb'
 
 class NthuCourseCrawler
@@ -82,24 +85,32 @@ class NthuCourseCrawler
       break if not r.to_s.include?('Wrong check code!')
     end # end loop do
 
+    @threads = []
     # 拿到 auth_num 及對應 acixstore，可以開始招搖撞騙了
     depts_h.keys.each do |dep_c|
-      puts depts_h[dep_c]
-      r = RestClient.post @result_url, {
-        'ACIXSTORE' => @acixstore,
-        'T_YEAR' => (@year-1911).to_s,
-        'C_TERM' => @term.to_s.ljust(2, '0'),
-        'E_YEAR' => nil,
-        'CATEGORY' => nil,
-        'STU_CLASS' => nil,
-        'STU_GROUP' => nil,
-        'SEL_FUNC' => 'DEP',
-        'DEPT' => dep_c,
-        'auth_num' => @captcha
-      }
+      sleep(1) until (
+        @threads.delete_if { |t| !t.status };  # remove dead (ended) threads
+        @threads.count < (ENV['MAX_THREADS'] || 10)
+      )
+      @threads << Thread.new do
+        r = RestClient.post @result_url, {
+          'ACIXSTORE' => @acixstore,
+          'T_YEAR' => (@year-1911).to_s,
+          'C_TERM' => @term.to_s.ljust(2, '0'),
+          'E_YEAR' => nil,
+          'CATEGORY' => nil,
+          'STU_CLASS' => nil,
+          'STU_GROUP' => nil,
+          'SEL_FUNC' => 'DEP',
+          'DEPT' => dep_c,
+          'auth_num' => @captcha
+        }
 
-      parse_course(Nokogiri::HTML(@ic.iconv(r)), dep_c, depts_h[dep_c])
+        parse_course(Nokogiri::HTML(@ic.iconv(r)), dep_c, depts_h[dep_c])
+        print "#{depts_h[dep_c]}"
+      end
     end
+    ThreadsWait.all_waits(*@threads)
 
     @courses.values
   end
@@ -119,6 +130,8 @@ class NthuCourseCrawler
   end
 
   def parse_course(doc, dep_c, dep_n)
+    detail_threads = []
+
     doc.css('div.newpage').each do |page|
       year = nil; term = nil; department = nil; department_code = nil; class_code = nil;
 
@@ -203,9 +216,16 @@ class NthuCourseCrawler
           location_8: course_locations[7],
           location_9: course_locations[8],
         }
-        @after_each_proc.call(:course => @courses[code]) if @after_each_proc
+        sleep(1) until (
+          detail_threads.delete_if { |t| !t.status };  # remove dead (ended) threads
+          detail_threads.count < (ENV['MAX_THREADS'] || 20)
+        )
+        detail_threads << Thread.new do
+          @after_each_proc.call(:course => @courses[code]) if @after_each_proc
+        end
       end # each row do
     end # each newpage do
+    ThreadsWait.all_waits(*detail_threads)
   end # end parse_course
 
 
