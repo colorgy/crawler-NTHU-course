@@ -60,7 +60,7 @@ class NthuCourseCrawler
     visit @query_url
 
     depts = @doc.css('select[name="DEPT"] option').map {|opt| [opt[:value], opt.text]}
-    depts_h = Hash[depts[1..-1].map {|dept| [dept[0], dept[1].strip.split('-')[1].match(/(^.+?[^\w])[\w\-\s&\.\(\)\']+$/)[1]]}]
+    depts_h = Hash[depts[1..-1].map {|dept| [dept[0], dept[1].strip.partition('-')[-1].match(/(^([\w\-]+)?[\u{4e00}-\u{9fa5}]+).+/)[1] ]}]
 
     @name_to_code = Hash[depts_h.map{|k, v| [v, k.strip]}]
     # ys = "#{@year-1911}|#{@term.to_s.ljust(2, '0')}"
@@ -107,7 +107,7 @@ class NthuCourseCrawler
         }
 
         parse_course(Nokogiri::HTML(@ic.iconv(r)), dep_c, depts_h[dep_c])
-        print "#{depts_h[dep_c]}"
+        print "#{depts_h[dep_c]}\n"
       end
     end
     ThreadsWait.all_waits(*@threads)
@@ -139,9 +139,9 @@ class NthuCourseCrawler
         year = m[:year].to_i
         term = m[:term].to_i
         department = m[:dep]
-        department_code = m[:dc]
+        department_code = m[:dc].strip
         grade_code = m[:gc]
-        class_code = "#{department_code}#{grade_code}"
+        class_code = "#{department_code}#{grade_code}".gsub(/\s+/,'-')
       end
 
       year ||= @year-1911; term ||= @term; department ||= dep_n; department_code ||= dep_c
@@ -173,7 +173,8 @@ class NthuCourseCrawler
 
         general_code = datas[0].text.gsub(/\s+/, '')
 
-        code = "#{year}#{term.to_s.ljust(2, '0')}#{general_code}-#{class_code}"
+        # code = "#{year}#{term.to_s.ljust(2, '0')}#{general_code}-#{class_code}"
+        code = "#{year}#{term.to_s.ljust(2, '0')}#{general_code}"
 
         @courses[code] || @courses[code] = {}
         @courses[code] = {
@@ -240,4 +241,4 @@ class NthuCourseCrawler
 end
 
 # cc = NthuCourseCrawler.new(year: 2015, term: 1)
-# File.write('1041courses.json', JSON.pretty_generate(cc.courses))
+# File.write('1041_nthu_courses.json', JSON.pretty_generate(cc.courses))
