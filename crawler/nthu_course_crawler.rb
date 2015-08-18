@@ -53,7 +53,7 @@ class NthuCourseCrawler
     @update_progress_proc = update_progress
     @after_each_proc = after_each
 
-    @ic = Iconv.new("utf-8//translit//IGNORE","big5")
+    @ic = Iconv.new("utf-8//IGNORE//translit","big5")
   end
 
   def courses detail: false
